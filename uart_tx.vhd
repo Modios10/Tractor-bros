@@ -75,3 +75,72 @@ begin
         end if;
     end process;
 end rtl;
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity uart_rx is
+    Generic (
+        CLK_FREQ  : integer := 50_000_000;
+        BAUD_RATE : integer := 115200
+    );
+    Port (
+        clk           : in  std_logic;
+        rx_line       : in  std_logic;
+        data_out      : out std_logic_vector(7 downto 0);
+        new_data_tick : out std_logic
+    );
+end uart_rx;
+
+architecture rtl of uart_rx is
+    constant BIT_PERIOD : integer := CLK_FREQ / BAUD_RATE;
+    type state_type is (IDLE, START_BIT, DATA_BITS, STOP_BIT);
+    signal state     : state_type := IDLE;
+    signal clk_count : integer range 0 to BIT_PERIOD - 1 := 0;
+    signal bit_index : integer range 0 to 7 := 0;
+    signal rx_reg    : std_logic_vector(7 downto 0) := (others => '0');
+begin
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            new_data_tick <= '0';
+            case state is
+                when IDLE =>
+                    if rx_line = '0' then -- Detecta bit de inicio
+                        state <= START_BIT;
+                        clk_count <= 0;
+                    end if;
+                when START_BIT =>
+                    if clk_count = BIT_PERIOD/2 then -- Muestreo a mitad del bit
+                        state <= DATA_BITS;
+                        clk_count <= 0;
+                    else
+                        clk_count <= clk_count + 1;
+                    end if;
+                when DATA_BITS =>
+                    if clk_count < BIT_PERIOD - 1 then
+                        clk_count <= clk_count + 1;
+                    else
+                        clk_count <= 0;
+                        rx_reg(bit_index) <= rx_line;
+                        if bit_index < 7 then
+                            bit_index <= bit_index + 1;
+                        else
+                            bit_index <= 0;
+                            state <= STOP_BIT;
+                        end if;
+                    end if;
+                when STOP_BIT =>
+                    if clk_count < BIT_PERIOD - 1 then
+                        clk_count <= clk_count + 1;
+                    else
+                        data_out <= rx_reg;
+                        new_data_tick <= '1';
+                        state <= IDLE;
+                        clk_count <= 0;
+                    end if;
+            end case;
+        end if;
+    end process;
+end rtl;
