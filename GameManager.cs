@@ -67,6 +67,7 @@ public class GameManager : MonoBehaviour
         UpdateGrainUI();
         UpdateLivesUI();
         SendRemainingToFpga();
+        StartCoroutine(SendRemainingToFpgaNextFrame());
 
         Debug.Log("Starting " + levelName + " | grains=" + totalGrain + " lives=" + currentLives);
     }
@@ -133,6 +134,12 @@ public class GameManager : MonoBehaviour
 
         int remaining = Mathf.Max(totalGrain - grainCount, 0);
         SerialController.Instance.SendRemainingGrains(remaining);
+    }
+
+    private System.Collections.IEnumerator SendRemainingToFpgaNextFrame()
+    {
+        yield return null;
+        SendRemainingToFpga();
     }
 
     private void WinGame()
