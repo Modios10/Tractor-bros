@@ -22,7 +22,8 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private string loseSceneName = "LoseScene";
 
     [Header("Levels")]
-    [SerializeField] private LevelConfig[] levels = new LevelConfig[3]
+    [SerializeField]
+    private LevelConfig[] levels = new LevelConfig[3]
     {
         new LevelConfig { levelName = "Level 1", grainCount = 20, lives = 3, bombCount = 2, bombSpeed = 1.5f },
         new LevelConfig { levelName = "Level 2", grainCount = 20, lives = 3, bombCount = 4, bombSpeed = 2.2f },
