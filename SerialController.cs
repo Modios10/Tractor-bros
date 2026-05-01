@@ -10,7 +10,7 @@ public class SerialController : MonoBehaviour
     private const int AxisNeutral = 127;
     private const int AxisDeadzone = 20;
 
-    public string portName = "COM7";
+    public string portName = "COM3";
     public int baudRate = 115200;
 
     private SerialPort serialPort;
@@ -167,12 +167,13 @@ public class SerialController : MonoBehaviour
             return;
         }
 
-        int clamped = Mathf.Clamp(remaining, 0, 99);
-        string decimalText = clamped.ToString("D2");
+        int clampedGrains = Mathf.Clamp(remaining, 0, 99);
+        string grainText = clampedGrains.ToString("D2");
 
         try
         {
-            serialPort.WriteLine(decimalText);
+            serialPort.WriteLine(grainText);
+            Debug.Log("Enviando al FPGA: " + grainText + " (Granos: " + clampedGrains + ")");
         }
         catch (Exception e)
         {
